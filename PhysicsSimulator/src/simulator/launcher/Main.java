@@ -1,11 +1,11 @@
 package simulator.launcher;
 
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-
 import java.util.ArrayList;
 
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /*
  * Examples of command-line parameters:
@@ -40,6 +40,7 @@ import simulator.factories.NoGravityBuilder;
 import simulator.model.Body;
 import simulator.model.GravityLaws;
 import simulator.model.PhysicsSimulator;
+import simulator.view.MainWindow;
 
 public class Main {
 
@@ -49,8 +50,11 @@ public class Main {
 
 	private final static Integer _stepsDefaultValue = 150;
 
-	
 
+	private final static String _modeDefaultValue= "batch";
+
+	
+	private static JFrame frame;
 
 	// some attributes to stores values corresponding to command-line parameters
 	//
@@ -58,6 +62,7 @@ public class Main {
 	private static Integer _steps= null;
 	private static String _inFile = null;
 	private static String _outFile = null;
+	private static String mode = null;
 	private static JSONObject _gravityLawsInfo = null;
 
 	// factories
@@ -100,6 +105,7 @@ public class Main {
 			parseDeltaTimeOption(line);
 			parseStepsOption(line);
 			parseGravityLawsOption(line);
+			parseModeOption(line);
 
 			// if there are some remaining arguments, then something wrong is
 			// provided in the command line!
@@ -118,6 +124,8 @@ public class Main {
 		}
 
 	}
+
+
 
 	private static Options buildOptions() {
 		Options cmdLineOptions = new Options();
@@ -142,6 +150,11 @@ public class Main {
 				.desc("A double representing actual time, in seconds, per simulation step. Default value: "
 						+ _dtimeDefaultValue + ".")
 				.build());
+
+		//mode
+		cmdLineOptions.addOption(Option.builder("m").longOpt("mode").hasArg().desc("Execution Mode. Possible values: "
+				+ "'batch'(batch mode), 'gui'((Graphical User Interface mode)."
+				+ " Default value:" + _modeDefaultValue + ".").build());
 
 		// gravity laws -- there is a workaround to make it work even when
 		// _gravityLawsFactory is null. 
@@ -176,7 +189,7 @@ public class Main {
 
 	private static void parseInFileOption(CommandLine line) throws ParseException {
 		_inFile = line.getOptionValue("i");
-		if (_inFile == null) {
+		if (_inFile == null && mode=="batch") {
 			throw new ParseException("An input file of bodies is required");
 		}
 	}
@@ -231,20 +244,59 @@ public class Main {
 		}
 	}
 
+	private static void parseModeOption(CommandLine line) throws ParseException {
+		String m=line.getOptionValue("m",_modeDefaultValue.toString());
+		try {
+			mode=m.toString();
+			
+			assert(mode =="gui" || mode=="batch");			
+		}
+		catch (Exception e) {
+			throw new ParseException("Invalid mode value" +m);
+		}
+		
+	}
 	private static void startBatchMode() throws Exception {
 
 		GravityLaws g = _gravityLawsFactory.createInstance(_gravityLawsInfo);
 		PhysicsSimulator simulator = new PhysicsSimulator(g, _dtime);
-		Controller controller = new Controller(simulator, _bodyFactory);
+		Controller controller = new Controller(simulator, _bodyFactory,_gravityLawsFactory);
 		FileInputStream ficheroEntrada = new FileInputStream(_inFile);
 		controller.loadBodies(ficheroEntrada);
 		if(_outFile== null || _outFile== "") {
-			controller.run(_steps);
+			controller.runC(_steps);
 		}
 		else {
 			FileOutputStream ficheroSalida = new FileOutputStream(_outFile);
 			controller.run(_steps, ficheroSalida);
 		}
+
+
+
+
+	}
+
+	private static void startGUIMode() throws Exception{
+
+		GravityLaws g = _gravityLawsFactory.createInstance(_gravityLawsInfo);
+		PhysicsSimulator simulator = new PhysicsSimulator(g, _dtime);
+		Controller controller = new Controller(simulator, _bodyFactory, _gravityLawsFactory);
+		if(_inFile!=null) {
+			FileInputStream ficheroEntrada = new FileInputStream(_inFile);
+			controller.loadBodies(ficheroEntrada);
+			
+		}
+		if(_outFile!=null) throw new Exception("No puedes tener un archivo de salida");
+		SwingUtilities.invokeAndWait(new Runnable() {
+
+			@Override
+			public void run() {
+				frame =new MainWindow(controller);
+				frame.setVisible(true);
+
+			}
+
+		});
 
 
 
@@ -259,10 +311,13 @@ public class Main {
 
 
 
-
 	private static void start(String[] args) throws Exception {
 		parseArgs(args);
-		startBatchMode();
+		if(mode.equalsIgnoreCase("gui")) startGUIMode();	
+		else startBatchMode();
+		
+
+
 	}
 
 	public static void main(String[] args) {

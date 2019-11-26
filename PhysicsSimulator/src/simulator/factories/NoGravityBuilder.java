@@ -7,7 +7,7 @@ import simulator.model.NoGravity;
 
 public class NoGravityBuilder extends Builder<GravityLaws>{
 	public NoGravityBuilder() {
-		super("ng","Sin gravedad");
+		super("ng","No Gravity Law");
 
 	}
 	@Override

@@ -15,5 +15,7 @@ public class NoGravity implements GravityLaws {
 		// TODO Auto-generated method stub
 		
 	}
-
+	public String toString() {
+		return "Esta ley de la gravedad deja la aceleracion constante";
+	}
 }

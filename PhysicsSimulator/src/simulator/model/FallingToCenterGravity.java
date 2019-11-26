@@ -15,11 +15,14 @@ public class FallingToCenterGravity implements GravityLaws {
 		
 		for(Body b:bodies) {
 			//Vector d = new Vector(b.getPosition()); 
-			
+			//vector aceleracion = -g * vector direccion
 			b.setAcceleration(b.getPosition().direction().scale(g)); 
-			
+			//no se si ese metodo direction del vector posicion de b devuelve la direccion o no
 		}
 		
+	}
+	public String toString() {
+		return "Esta es la ley de falling to center gravity(FTCG)";
 	}
 
 }

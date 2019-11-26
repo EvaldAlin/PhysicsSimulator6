@@ -7,7 +7,7 @@ import simulator.model.NewtonUniversalGravitation;
 
 public class NewtonUniversalGravitationBuilder extends Builder<GravityLaws>{
 	public NewtonUniversalGravitationBuilder() {
-		super("nlug","Ley de Newton de la gravitacion universal");
+		super("nlug","Newton Universal Gravitation Law");
 
 	}
 	@Override

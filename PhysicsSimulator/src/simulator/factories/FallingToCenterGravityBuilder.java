@@ -7,7 +7,7 @@ import simulator.model.GravityLaws;
 
 public class FallingToCenterGravityBuilder extends Builder<GravityLaws> {
 	public FallingToCenterGravityBuilder() {
-		super("ftcg","Cayendo hacia el centro");
+		super("ftcg","Falling to Center Gravity Law");
 	}
 	@Override
 	public GravityLaws createTheInstance(JSONObject jsonObject) {
